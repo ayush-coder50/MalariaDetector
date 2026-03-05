@@ -82,30 +82,3 @@ Then navigate to `http://localhost:8080`.
 | Classifier | SVM + CNN patch classification |
 | Cloud sync | Box.com API |
 
-### Building the Android APK
-
-```bash
-git clone https://github.com/LHNCBC/MalariaScreener.git
-```
-
-Open in **Android Studio**, then install:
-- Android SDK Platform **28**
-- Android SDK Build-Tools **27.0.3+**
-- CMake **3.4.1+**
-- Android NDK (for native OpenCV)
-
----
-
-## Citation
-
-```bibtex
-@article{yu2020malaria,
-  title   = {Malaria Screener: a smartphone application for automated malaria screening},
-  author  = {Yu, Hang and Yang, Feng and Rajaraman, Sivaramakrishnan and others},
-  journal = {BMC Infectious Diseases},
-  volume  = {20},
-  pages   = {1--8},
-  year    = {2020},
-  publisher = {BioMed Central}
-}
-```
