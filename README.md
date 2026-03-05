@@ -68,17 +68,4 @@ python3 -m http.server 8080
 
 Then navigate to `http://localhost:8080`.
 
----
-
-## Original Android App
-
-| Property | Value |
-|---|---|
-| Repository | https://github.com/LHNCBC/MalariaScreener |
-| Developer | LHNCBC / NIH / NLM |
-| Platform | Android API 21+ (Lollipop 5.0+) |
-| Detection | OpenCV 3.4.2 + TensorFlow CNN (`.pb` models) |
-| Segmentation | Marker-Based Watershed (thin) + C++ native (thick) |
-| Classifier | SVM + CNN patch classification |
-| Cloud sync | Box.com API |
-
+--------
