@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLM Malaria Screener · Enhanced</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0c1117;
+  --ink2: #141b25;
+  --ink3: #1c2535;
+  --ink4: #243044;
+  --line: rgba(255,255,255,0.07);
+  --line2: rgba(255,255,255,0.12);
+  --teal: #12e5b4;
+  --teal-dim: rgba(18,229,180,0.12);
+  --teal-glow: rgba(18,229,180,0.25);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --red: #f43f5e;
+  --red-dim: rgba(244,63,94,0.12);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.12);
+  --text: #e2e8f5;
+  --text2: #7d8fa8;
+  --text3: #3a4a62;
+  --font: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --r: 14px;
+  --r2: 20px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--ink);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle noise texture overlay */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:999;
+  opacity:0.4;
+}
+
+/* ─── LAYOUT ─── */
+.shell { display:flex; height:100vh; overflow:hidden; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width:252px;
+  flex-shrink:0;
+  background: var(--ink2);
+  border-right: 1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+}
+
+.brand {
+  padding:24px 20px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-logo {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.brand-hex {
+  width:40px; height:40px;
+  background: linear-gradient(135deg, var(--teal) 0%, #0abf97 100%);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  box-shadow: 0 4px 16px var(--teal-glow);
+  flex-shrink:0;
+}
+
+.brand-name {
+  font-size:14px;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:0.01em;
+  line-height:1.2;
+}
+
+.brand-org {
+  font-size:10px;
+  color:var(--text2);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  font-family:var(--mono);
+}
+
+.brand-ver {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  color:var(--text2);
+  font-family:var(--mono);
+}
+
+.live-dot {
+  width:6px; height:6px;
+  background:var(--teal);
+  border-radius:50%;
+  animation: blink 2s ease infinite;
+}
+
+@keyframes blink {
+  0%,100%{opacity:1;box-shadow:0 0 6px var(--teal)}
+  50%{opacity:0.3;box-shadow:none}
+}
+
+.nav { flex:1; padding:12px 10px; }
+
+.nav-group { margin-bottom:6px; }
+
+.nav-label {
+  font-size:9px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  color:var(--text3);
+  padding:12px 10px 6px;
+  font-family:var(--mono);
+}
+
+.nav-btn {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  padding:9px 10px;
+  border-radius:10px;
+  border:none;
+  background:transparent;
+  color:var(--text2);
+  font-family:var(--font);
+  font-size:13.5px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.18s;
+  text-align:left;
+  margin-bottom:1px;
+}
+
+.nav-btn:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+
+.nav-btn.on {
+  background: var(--teal-dim);
+  color: var(--teal);
+}
+
+.nav-btn .ni {
+  width:28px; height:28px;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px;
+  background:rgba(255,255,255,0.04);
+  flex-shrink:0;
+  transition:all 0.18s;
+}
+
+.nav-btn.on .ni { background:rgba(18,229,180,0.15); }
+
+.nav-btn .nb {
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:20px;
+  background:var(--red-dim);
+  color:var(--red);
+}
+
+.nav-btn .nb.g { background:var(--teal-dim); color:var(--teal); }
+
+.sidebar-foot {
+  padding:14px;
+  border-top:1px solid var(--line);
+}
+
+.foot-card {
+  padding:12px;
+  background:var(--blue-dim);
+  border:1px solid rgba(59,130,246,0.18);
+  border-radius:12px;
+  font-size:12px;
+}
+
+.foot-card strong { display:block; color:var(--blue); font-size:13px; margin-bottom:3px; }
+.foot-card span { color:var(--text2); line-height:1.6; font-size:11.5px; }
+
+/* ─── MAIN ─── */
+.main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ─── TOPBAR ─── */
+.topbar {
+  height:58px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  background:rgba(12,17,23,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+
+.tb-left { display:flex; align-items:center; gap:16px; }
+
+.tb-title {
+  font-size:15px;
+  font-weight:600;
+}
+
+.tb-crumb {
+  font-size:12px;
+  color:var(--text2);
+  font-family:var(--mono);
+}
+
+.tb-right { display:flex; align-items:center; gap:10px; }
+
+.pill {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 13px;
+  border-radius:20px;
+  font-size:11.5px;
+  font-weight:600;
+  font-family:var(--mono);
+}
+
+.pill-teal { background:var(--teal-dim); color:var(--teal); border:1px solid rgba(18,229,180,0.2); }
+.pill-red  { background:var(--red-dim);  color:var(--red);  border:1px solid rgba(244,63,94,0.2); }
+.pill-blue { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(59,130,246,0.2); }
+
+.btn {
+  padding:8px 18px;
+  border-radius:10px;
+  font-family:var(--font);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all 0.2s;
+}
+
+.btn-teal {
+  background:linear-gradient(135deg, var(--teal), #0abf97);
+  color:#051a13;
+}
+
+.btn-teal:hover { transform:translateY(-1px); box-shadow:0 6px 20px var(--teal-glow); }
+
+.btn-ghost {
+  background:transparent;
+  border:1px solid var(--line2);
+  color:var(--text2);
+}
+
+.btn-ghost:hover { border-color:var(--teal); color:var(--teal); }
+
+.btn-danger {
+  background:var(--red-dim);
+  border:1px solid rgba(244,63,94,0.25);
+  color:var(--red);
+}
+
+.btn-danger:hover { background:rgba(244,63,94,0.2); }
+
+.btn-sm { padding:6px 14px; font-size:12px; }
+
+/* ─── CONTENT ─── */
+.content {
+  flex:1;
+  overflow-y:auto;
+  padding:28px;
+}
+
+.page { display:none; animation:fadeUp 0.25s ease; }
+.page.on { display:block; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── DASHBOARD ─── */
+.dash-banner {
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:20px;
+  margin-bottom:24px;
+}
+
+.banner-main {
+  background: linear-gradient(135deg, #0d2036 0%, #0c1a2e 50%, #0e1e38 100%);
+  border:1px solid rgba(59,130,246,0.2);
+  border-radius:var(--r2);
+  padding:36px 36px 32px;
+  position:relative;
+  overflow:hidden;
+}
+
+.banner-main::before {
+  content:'';
+  position:absolute;
+  top:-60px; right:-80px;
+  width:320px; height:320px;
+  background:radial-gradient(circle, rgba(18,229,180,0.08), transparent 65%);
+  pointer-events:none;
+}
+
+.banner-eyebrow {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--teal);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.banner-eyebrow::before {
+  content:'';
+  display:inline-block;
+  width:18px; height:2px;
+  background:var(--teal);
+  border-radius:2px;
+}
+
+.banner-h1 {
+  font-size:30px;
+  font-weight:800;
+  line-height:1.15;
+  margin-bottom:14px;
+  letter-spacing:-0.02em;
+}
+
+.banner-h1 em {
+  font-style:normal;
+  color:var(--teal);
+  position:relative;
+}
+
+.banner-h1 em::after {
+  content:'';
+  position:absolute;
+  bottom:-2px; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg, var(--teal), transparent);
+}
+
+.banner-p {
+  font-size:14px;
+  color:var(--text2);
+  line-height:1.75;
+  max-width:480px;
+  margin-bottom:24px;
+}
+
+.banner-btns { display:flex; gap:10px; }
+
+.banner-side {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  padding:28px;
+}
+
+.micro-icon {
+  font-size:64px;
+  filter:drop-shadow(0 0 24px rgba(18,229,180,0.5));
+  animation:levitate 4s ease-in-out infinite;
+}
+
+@keyframes levitate {
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-10px) rotate(2deg)}
+}
+
+.acc-stat {
+  text-align:center;
+  background:var(--teal-dim);
+  border:1px solid rgba(18,229,180,0.18);
+  border-radius:12px;
+  padding:14px 24px;
+  width:100%;
+}
+
+.acc-val { font-size:28px; font-weight:800; color:var(--teal); font-family:var(--mono); }
+.acc-label { font-size:11px; color:var(--text2); margin-top:3px; text-transform:uppercase; letter-spacing:0.08em; font-family:var(--mono); }
+
+/* Stats bar */
+.kpis {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:24px;
+}
+
+.kpi {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:18px 20px;
+  transition:all 0.2s;
+  cursor:default;
+}
+
+.kpi:hover { border-color:rgba(18,229,180,0.25); transform:translateY(-2px); }
+
+.kpi-row { display:flex; align-items:flex-start; justify-content:space-between; }
+
+.kpi-icon {
+  width:36px; height:36px;
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+  flex-shrink:0;
+}
+
+.kpi-val { font-size:30px; font-weight:800; font-family:var(--mono); margin:10px 0 4px; line-height:1; }
+.kpi-lbl { font-size:11.5px; color:var(--text2); font-weight:500; text-transform:uppercase; letter-spacing:0.07em; }
+.kpi-trend { font-size:11px; font-family:var(--mono); margin-top:6px; }
+.kpi-trend.up { color:var(--teal); }
+.kpi-trend.dn { color:var(--red); }
+.kpi-trend.neu { color:var(--text2); }
+
+/* Content split */
+.content-cols {
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:20px;
+}
+
+.panel {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r2);
+  overflow:hidden;
+}
+
+.panel-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 22px;
+  border-bottom:1px solid var(--line);
+}
+
+.panel-head-left {}
+.panel-title { font-size:14px; font-weight:700; }
+.panel-sub { font-size:11.5px; color:var(--text2); margin-top:2px; }
+.panel-body { padding:18px 22px; }
+
+/* Table */
+.tbl { width:100%; border-collapse:collapse; }
+
+.tbl thead tr th {
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:var(--text3);
+  padding:8px 10px;
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-weight:500;
+  text-align:left;
+}
+
+.tbl tbody tr { transition:background 0.15s; }
+.tbl tbody tr:hover td { background:rgba(255,255,255,0.02); }
+
+.tbl td {
+  padding:11px 10px;
+  font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+
+.tbl tbody tr:last-child td { border-bottom:none; }
+
+.smear-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:11px;
+  font-weight:700;
+  font-family:var(--mono);
+  padding:3px 10px;
+  border-radius:20px;
+}
+
+.sc-thin { background:var(--teal-dim); color:var(--teal); border:1px solid rgba(18,229,180,0.2); }
+.sc-thick { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(59,130,246,0.2); }
+
+.risk { font-size:11px; font-weight:700; font-family:var(--mono); padding:3px 9px; border-radius:20px; }
+.risk-h { background:var(--red-dim);   color:var(--red);   border:1px solid rgba(244,63,94,0.2); }
+.risk-m { background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,158,11,0.2); }
+.risk-l { background:var(--teal-dim);  color:var(--teal);  border:1px solid rgba(18,229,180,0.2); }
+
+.pid { font-family:var(--mono); font-size:12px; color:var(--text2); }
+
+/* Donut */
+.donut-wrap {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px 0 10px;
+}
+
+.donut-svg { transform:rotate(-90deg); }
+
+.donut-track { fill:none; stroke:var(--ink3); stroke-width:12; }
+.donut-fill  { fill:none; stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1.6s cubic-bezier(.4,0,.2,1); }
+
+.donut-center {
+  margin-top:14px;
+  text-align:center;
+}
+
+.donut-val { font-size:34px; font-weight:800; font-family:var(--mono); line-height:1; }
+.donut-desc { font-size:12px; color:var(--text2); margin-top:4px; }
+
+.legend { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+
+.leg-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+}
+
+.leg-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.leg-val { margin-left:auto; font-family:var(--mono); font-size:11.5px; color:var(--text2); }
+
+/* ─── SESSION WIZARD ─── */
+.wizard-wrap { max-width:680px; margin:0 auto; }
+
+.steps {
+  display:flex;
+  align-items:center;
+  margin-bottom:28px;
+  position:relative;
+}
+
+.steps::before {
+  content:'';
+  position:absolute;
+  left:18px;
+  right:18px;
+  top:18px;
+  height:1px;
+  background:var(--line);
+  z-index:0;
+}
+
+.step {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  position:relative;
+  z-index:1;
+}
+
+.step-n {
+  width:36px; height:36px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px;
+  font-weight:700;
+  font-family:var(--mono);
+  border:2px solid var(--ink3);
+  background:var(--ink2);
+  color:var(--text3);
+  transition:all 0.3s;
+}
+
+.step.cur .step-n { border-color:var(--teal); background:var(--teal-dim); color:var(--teal); }
+.step.done .step-n { border-color:var(--teal); background:var(--teal); color:#051a13; }
+
+.step-lbl { font-size:11px; font-weight:600; color:var(--text3); text-align:center; white-space:nowrap; }
+.step.cur .step-lbl { color:var(--teal); }
+.step.done .step-lbl { color:var(--text2); }
+
+.wiz-card {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r2);
+  overflow:hidden;
+}
+
+.wiz-body { padding:32px 32px 8px; }
+
+.wiz-foot {
+  padding:18px 32px;
+  border-top:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.wiz-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+.wiz-sub { font-size:13.5px; color:var(--text2); line-height:1.65; margin-bottom:24px; }
+
+/* Smear selector */
+.smear-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+
+.smear-card {
+  border:2px solid var(--line2);
+  border-radius:var(--r);
+  padding:22px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.smear-card:hover { border-color:var(--text2); }
+.smear-card.sel-thin  { border-color:var(--teal); background:var(--teal-dim); }
+.smear-card.sel-thick { border-color:var(--blue); background:var(--blue-dim); }
+
+.smear-icon { font-size:36px; margin-bottom:12px; display:block; }
+.smear-name { font-size:16px; font-weight:700; margin-bottom:6px; }
+.smear-desc { font-size:12.5px; color:var(--text2); line-height:1.6; }
+.smear-features { margin-top:12px; display:flex; flex-direction:column; gap:5px; }
+.smear-feat { font-size:11.5px; color:var(--text2); display:flex; align-items:center; gap:6px; }
+.smear-feat::before { content:'→'; color:var(--teal); }
+
+.tip-box {
+  padding:14px 16px;
+  background:var(--teal-dim);
+  border:1px solid rgba(18,229,180,0.15);
+  border-radius:10px;
+  font-size:12.5px;
+  color:var(--text2);
+  line-height:1.65;
+}
+
+.tip-box strong { color:var(--text); }
+
+/* Form */
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.fgrp { margin-bottom:16px; }
+
+.flbl {
+  display:block;
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.09em;
+  color:var(--text2);
+  margin-bottom:7px;
+  font-family:var(--mono);
+}
+
+.flbl .req { color:var(--teal); }
+
+.finput, .fsel {
+  width:100%;
+  background:var(--ink);
+  border:1px solid var(--line2);
+  border-radius:10px;
+  padding:11px 14px;
+  color:var(--text);
+  font-family:var(--font);
+  font-size:14px;
+  outline:none;
+  transition:all 0.2s;
+  appearance:none;
+}
+
+.finput:focus, .fsel:focus {
+  border-color:var(--teal);
+  box-shadow:0 0 0 3px var(--teal-dim);
+}
+
+.finput::placeholder { color:var(--text3); }
+
+/* ─── CAMERA PAGE ─── */
+.cam-layout {
+  display:grid;
+  grid-template-columns:1fr 310px;
+  gap:20px;
+  height:calc(100vh - 112px);
+}
+
+.cam-viewport {
+  background:#000;
+  border-radius:var(--r2);
+  border:1px solid var(--line);
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.cam-ring {
+  width:min(68%,400px);
+  aspect-ratio:1;
+  border-radius:50%;
+  border:2px solid rgba(18,229,180,0.45);
+  position:absolute;
+  box-shadow:
+    0 0 0 2000px rgba(0,0,0,0.45),
+    inset 0 0 50px rgba(18,229,180,0.08);
+}
+
+.cam-crosshair {
+  position:absolute;
+  width:32px; height:32px;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.cam-crosshair::before,
+.cam-crosshair::after {
+  content:'';
+  position:absolute;
+  background:var(--teal);
+  opacity:0.7;
+}
+
+.cam-crosshair::before { left:50%; top:0; width:1px; height:100%; transform:translateX(-50%); }
+.cam-crosshair::after  { top:50%; left:0; height:1px; width:100%; transform:translateY(-50%); }
+
+.cam-corner {
+  position:absolute;
+  width:16px; height:16px;
+  border-color:var(--teal);
+  border-style:solid;
+  opacity:0.8;
+}
+
+.cam-corner.tl { top:calc(50% - min(34%,200px)); left:calc(50% - min(34%,200px)); border-width:2px 0 0 2px; }
+.cam-corner.tr { top:calc(50% - min(34%,200px)); right:calc(50% - min(34%,200px)); border-width:2px 2px 0 0; }
+.cam-corner.bl { bottom:calc(50% - min(34%,200px)); left:calc(50% - min(34%,200px)); border-width:0 0 2px 2px; }
+.cam-corner.br { bottom:calc(50% - min(34%,200px)); right:calc(50% - min(34%,200px)); border-width:0 2px 2px 0; }
+
+.cam-top {
+  position:absolute;
+  top:0; left:0; right:0;
+  padding:16px 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
+  z-index:5;
+}
+
+.cam-pill {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 12px;
+  background:rgba(0,0,0,0.55);
+  border-radius:20px;
+  font-size:11.5px;
+  font-family:var(--mono);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.cam-pill span { color:var(--teal); font-weight:700; }
+
+.cam-bottom {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  z-index:5;
+}
+
+.cam-ghost-text {
+  color:rgba(255,255,255,0.25);
+  font-size:13px;
+  text-align:center;
+  z-index:2;
+}
+
+.cam-action {
+  width:42px; height:42px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#fff;
+  font-size:17px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  backdrop-filter:blur(10px);
+}
+
+.cam-action:hover { background:rgba(255,255,255,0.16); }
+
+.shutter {
+  width:64px; height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--teal), #0abf97);
+  border:3px solid rgba(18,229,180,0.35);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+  cursor:pointer;
+  transition:all 0.2s;
+  box-shadow:0 0 28px var(--teal-glow);
+  color:#051a13;
+}
+
+.shutter:hover { transform:scale(1.07); box-shadow:0 0 40px rgba(18,229,180,0.45); }
+.shutter:active { transform:scale(0.96); }
+
+/* Camera side panel */
+.cam-panel { display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
+
+.cp-section {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:16px;
+}
+
+.cp-title {
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.12em;
+  color:var(--text3);
+  font-family:var(--mono);
+  margin-bottom:14px;
+}
+
+.count-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.count-box {
+  background:var(--ink);
+  border-radius:10px;
+  padding:14px;
+  text-align:center;
+}
+
+.count-num { font-size:30px; font-weight:800; font-family:var(--mono); line-height:1; }
+.count-num.c-total   { color:var(--teal); }
+.count-num.c-inf     { color:var(--red); }
+.count-sub { font-size:10px; color:var(--text2); margin-top:5px; text-transform:uppercase; letter-spacing:0.08em; }
+
+.pbar-wrap { margin-top:12px; }
+
+.pbar-head {
+  display:flex;
+  justify-content:space-between;
+  font-size:11.5px;
+  margin-bottom:7px;
+}
+
+.pbar-head span { color:var(--text2); }
+.pbar-head strong { font-family:var(--mono); color:var(--teal); }
+
+.pbar {
+  height:7px;
+  background:var(--ink);
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.pbar-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--teal), var(--blue));
+  border-radius:20px;
+  transition:width 0.5s ease;
+}
+
+.thumb-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+
+.th {
+  aspect-ratio:1;
+  background:var(--ink);
+  border-radius:7px;
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px;
+  color:var(--text3);
+  font-family:var(--mono);
+  cursor:pointer;
+  transition:all 0.2s;
+  overflow:hidden;
+}
+
+.th:hover { border-color:var(--text2); }
+.th.ok { border-color:rgba(18,229,180,0.4); background:rgba(18,229,180,0.07); color:var(--teal); font-size:16px; }
+.th.processing { border-color:var(--amber); animation:pulse2 0.8s ease infinite; }
+
+@keyframes pulse2 {
+  0%,100%{opacity:1}
+  50%{opacity:0.4}
+}
+
+/* Toggle switch */
+.toggle-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+.toggle-row:last-child { margin-bottom:0; }
+
+.toggle-label { color:var(--text2); }
+
+.tog {
+  width:42px; height:22px;
+  border-radius:11px;
+  background:var(--ink);
+  border:1px solid var(--line2);
+  cursor:pointer;
+  position:relative;
+  transition:background 0.2s;
+  flex-shrink:0;
+}
+
+.tog::after {
+  content:'';
+  position:absolute;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:#fff;
+  top:2px; left:2px;
+  transition:transform 0.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.4);
+}
+
+.tog.on { background:var(--teal); border-color:var(--teal); }
+.tog.on::after { transform:translateX(20px); }
+
+/* ─── DATABASE ─── */
+.db-topbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:22px;
+}
+
+.search-box {
+  position:relative;
+  width:260px;
+}
+
+.search-box input {
+  width:100%;
+  background:var(--ink2);
+  border:1px solid var(--line2);
+  border-radius:10px;
+  padding:9px 14px 9px 38px;
+  color:var(--text);
+  font-family:var(--font);
+  font-size:13px;
+  outline:none;
+  transition:border-color 0.2s;
+}
+
+.search-box input:focus { border-color:var(--teal); }
+.search-box input::placeholder { color:var(--text3); }
+
+.search-box::before {
+  content:'🔍';
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:13px;
+  pointer-events:none;
+}
+
+.pt-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.pt-card {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:20px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.pt-card:hover {
+  border-color:rgba(18,229,180,0.3);
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(0,0,0,0.25);
+}
+
+.pt-av {
+  width:42px; height:42px;
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+  font-weight:800;
+  margin-bottom:12px;
+}
+
+.pt-pid { font-family:var(--mono); font-size:11px; color:var(--text2); }
+.pt-name { font-size:16px; font-weight:700; margin:4px 0 8px; }
+.pt-chips { display:flex; gap:6px; flex-wrap:wrap; }
+
+.chip {
+  font-size:11px;
+  padding:3px 9px;
+  border-radius:20px;
+  background:var(--ink3);
+  color:var(--text2);
+}
+
+.pt-foot {
+  margin-top:14px;
+  padding-top:13px;
+  border-top:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:12px;
+}
+
+.pt-para { font-family:var(--mono); font-weight:700; font-size:13px; }
+
+/* ─── SETTINGS ─── */
+.settings-layout {
+  display:grid;
+  grid-template-columns:200px 1fr;
+  gap:20px;
+}
+
+.settings-nav {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.sn-item {
+  padding:9px 12px;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--text2);
+  transition:all 0.18s;
+  border:1px solid transparent;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.sn-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+.sn-item.on { background:var(--teal-dim); color:var(--teal); border-color:rgba(18,229,180,0.2); }
+
+.settings-sections { display:flex; flex-direction:column; gap:16px; }
+
+.ss {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+
+.ss-head {
+  padding:14px 20px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.ss-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.025);
+}
+
+.ss-row:last-child { border-bottom:none; }
+
+.ss-info {}
+.ss-name { font-size:14px; font-weight:500; margin-bottom:3px; }
+.ss-desc { font-size:12px; color:var(--text2); line-height:1.55; max-width:380px; }
+
+.sl-wrap { display:flex; align-items:center; gap:10px; width:180px; }
+
+input[type=range] {
+  flex:1;
+  -webkit-appearance:none;
+  height:5px;
+  background:var(--ink3);
+  border-radius:5px;
+  outline:none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:var(--teal);
+  cursor:pointer;
+  box-shadow:0 0 8px var(--teal-glow);
+}
+
+.sl-val { font-family:var(--mono); font-size:12px; color:var(--teal); width:38px; text-align:right; flex-shrink:0; }
+
+/* ─── GUIDELINES ─── */
+.guide-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.guide-card {
+  background:var(--ink2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:22px;
+  transition:all 0.2s;
+}
+
+.guide-card:hover { border-color:rgba(18,229,180,0.25); }
+.gc-icon { font-size:26px; margin-bottom:12px; }
+.gc-title { font-size:14px; font-weight:700; margin-bottom:7px; }
+.gc-desc { font-size:12.5px; color:var(--text2); line-height:1.7; }
+
+.compare-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+
+.cg-head {
+  padding:14px 20px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.cg-head:first-child { border-right:1px solid var(--line); }
+
+.cg-item {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:16px 20px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+
+.cg-item:last-child { border-bottom:none; }
+.cg-item:nth-child(even) { border-right:1px solid var(--line); }
+
+.cg-ic {
+  width:32px; height:32px;
+  border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+  flex-shrink:0;
+}
+
+.ic-ok { background:rgba(18,229,180,0.12); }
+.ic-no { background:var(--red-dim); }
+
+.cg-text {}
+.cg-bold { font-weight:600; margin-bottom:4px; }
+.cg-detail { font-size:12px; color:var(--text2); line-height:1.55; }
+
+/* ─── UPLOAD ─── */
+.upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+
+.upload-folder-list { display:flex; flex-direction:column; gap:8px; }
+
+.uf-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  background:var(--ink2);
+  border-radius:10px;
+  border:1px solid var(--line);
+  font-size:13px;
+  transition:border-color 0.2s;
+}
+
+.uf-row:hover { border-color:var(--line2); }
+.uf-name { font-family:var(--mono); font-size:12px; flex:1; color:var(--text2); }
+.uf-date { font-size:12px; color:var(--text3); }
+.uf-count { font-size:12px; color:var(--text2); }
+
+/* ─── NOTIFICATION ─── */
+.notif-tray {
+  position:fixed;
+  bottom:22px; right:22px;
+  z-index:1000;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+
+.notif-card {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 18px;
+  background:var(--ink3);
+  border:1px solid var(--line2);
+  border-radius:12px;
+  font-size:13px;
+  pointer-events:all;
+  box-shadow:0 8px 28px rgba(0,0,0,0.4);
+  animation:slideIn 0.25s ease;
+  max-width:340px;
+}
+
+@keyframes slideIn {
+  from{transform:translateX(100%);opacity:0}
+  to{transform:translateX(0);opacity:1}
+}
+
+.notif-card.exit { animation:slideOut 0.25s ease forwards; }
+
+@keyframes slideOut {
+  to{transform:translateX(120%);opacity:0}
+}
+
+.nc-icon { font-size:19px; flex-shrink:0; }
+.nc-text { flex:1; font-weight:500; }
+.nc-close { color:var(--text2); cursor:pointer; font-size:15px; padding:2px 4px; }
+.nc-close:hover { color:var(--text); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--ink4); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <div class="brand-hex">🔬</div>
+      <div>
+        <div class="brand-name">Malaria Screener</div>
+        <div class="brand-org">NIH · NLM · LHNCBC</div>
+      </div>
+    </div>
+    <div class="brand-ver">
+      <span class="live-dot"></span>
+      v1.6.2 · System Online
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-group">
+      <div class="nav-label">Screening</div>
+      <button class="nav-btn on" onclick="go('dashboard')">
+        <span class="ni">📊</span> Dashboard
+      </button>
+      <button class="nav-btn" onclick="go('session')">
+        <span class="ni">▶</span> New Session
+      </button>
+      <button class="nav-btn" onclick="go('camera')">
+        <span class="ni">📷</span> Camera View
+        <span class="nb g">LIVE</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Records</div>
+      <button class="nav-btn" onclick="go('database')">
+        <span class="ni">🗃</span> Patient Database
+      </button>
+      <button class="nav-btn" onclick="go('upload')">
+        <span class="ni">☁</span> Upload & Sync
+        <span class="nb">3</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Reference</div>
+      <button class="nav-btn" onclick="go('guidelines')">
+        <span class="ni">📋</span> Imaging Guidelines
+      </button>
+      <button class="nav-btn" onclick="go('settings')">
+        <span class="ni">⚙</span> Settings
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-card">
+      <strong>CNN Model Active</strong>
+      <span>TensorFlow v1 · model_v2.pb<br>Thin + Thick Smear Support</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="pg-title">Dashboard</div>
+      <div class="tb-crumb" id="pg-crumb">Overview</div>
+    </div>
+    <div class="tb-right">
+      <span class="pill pill-teal"><span class="live-dot"></span> Model Active</span>
+      <button class="btn btn-ghost btn-sm" onclick="go('session')">+ New Session</button>
+      <button class="btn btn-teal btn-sm" onclick="notify('Syncing data to Box...','☁')">Sync ☁</button>
+    </div>
+  </header>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page on" id="p-dashboard">
+      <div class="dash-banner">
+        <div class="banner-main">
+          <div class="banner-eyebrow">Automated Malaria Diagnostics</div>
+          <h1 class="banner-h1">Intelligent Blood Film<br><em>Analysis</em> Platform</h1>
+          <p class="banner-p">AI-powered parasite detection for P. falciparum in both thin and thick blood smears. Developed under NIH/NLM contract — combining image acquisition, OpenCV segmentation, and CNN classification.</p>
+          <div class="banner-btns">
+            <button class="btn btn-teal" onclick="go('session')">▶ Start Screening</button>
+            <button class="btn btn-ghost" onclick="go('guidelines')">📋 Imaging Guide</button>
+          </div>
+        </div>
+        <div class="banner-side">
+          <div class="micro-icon">🔬</div>
+          <div class="acc-stat">
+            <div class="acc-val">94.7%</div>
+            <div class="acc-label">CNN Accuracy</div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);text-align:center;line-height:1.6">
+            Marker-Based Watershed<br>Segmentation · SVM + CNN Classifier
+          </div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-row">
+            <div class="kpi-icon" style="background:var(--teal-dim)">🧬</div>
+          </div>
+          <div class="kpi-val" style="color:var(--teal)">1,284</div>
+          <div class="kpi-lbl">Total Sessions</div>
+          <div class="kpi-trend up">↑ 12% this month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-row">
+            <div class="kpi-icon" style="background:var(--red-dim)">🦠</div>
+          </div>
+          <div class="kpi-val" style="color:var(--red)">87</div>
+          <div class="kpi-lbl">Positive Cases</div>
+          <div class="kpi-trend dn">↑ 3 new today</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-row">
+            <div class="kpi-icon" style="background:var(--blue-dim)">🖼</div>
+          </div>
+          <div class="kpi-val" style="color:var(--blue)">9,431</div>
+          <div class="kpi-lbl">Images Captured</div>
+          <div class="kpi-trend up">↑ 234 this week</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-row">
+            <div class="kpi-icon" style="background:var(--amber-dim)">👤</div>
+          </div>
+          <div class="kpi-val" style="color:var(--amber)">342</div>
+          <div class="kpi-lbl">Patients Logged</div>
+          <div class="kpi-trend neu">Last: 2 hrs ago</div>
+        </div>
+      </div>
+
+      <div class="content-cols">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-head-left">
+              <div class="panel-title">Recent Sessions</div>
+              <div class="panel-sub">Latest screening activity</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="go('database')">View All →</button>
+          </div>
+          <div style="padding:0">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Smear</th>
+                  <th>Total Cells</th>
+                  <th>Infected</th>
+                  <th>Parasitemia</th>
+                  <th>Risk</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="pid">P-00471</td>
+                  <td><span class="smear-chip sc-thin">THIN</span></td>
+                  <td>1,000</td>
+                  <td style="color:var(--red);font-weight:600">42</td>
+                  <td style="font-family:var(--mono);color:var(--red)">4.20%</td>
+                  <td><span class="risk risk-h">HIGH</span></td>
+                  <td style="color:var(--text2);font-size:12px">Mar 5</td>
+                </tr>
+                <tr>
+                  <td class="pid">P-00470</td>
+                  <td><span class="smear-chip sc-thick">THICK</span></td>
+                  <td>200 WBC</td>
+                  <td style="color:var(--amber);font-weight:600">7</td>
+                  <td style="font-family:var(--mono);color:var(--amber)">1.20%</td>
+                  <td><span class="risk risk-m">MOD</span></td>
+                  <td style="color:var(--text2);font-size:12px">Mar 5</td>
+                </tr>
+                <tr>
+                  <td class="pid">P-00469</td>
+                  <td><span class="smear-chip sc-thin">THIN</span></td>
+                  <td>1,000</td>
+                  <td style="color:var(--teal);font-weight:600">0</td>
+                  <td style="font-family:var(--mono);color:var(--teal)">0.00%</td>
+                  <td><span class="risk risk-l">CLEAR</span></td>
+                  <td style="color:var(--text2);font-size:12px">Mar 4</td>
+                </tr>
+                <tr>
+                  <td class="pid">P-00468</td>
+                  <td><span class="smear-chip sc-thick">THICK</span></td>
+                  <td>200 WBC</td>
+                  <td style="color:var(--teal);font-weight:600">0</td>
+                  <td style="font-family:var(--mono);color:var(--teal)">0.00%</td>
+                  <td><span class="risk risk-l">CLEAR</span></td>
+                  <td style="color:var(--text2);font-size:12px">Mar 4</td>
+                </tr>
+                <tr>
+                  <td class="pid">P-00467</td>
+                  <td><span class="smear-chip sc-thin">THIN</span></td>
+                  <td>1,000</td>
+                  <td style="color:var(--red);font-weight:600">18</td>
+                  <td style="font-family:var(--mono);color:var(--red)">1.80%</td>
+                  <td><span class="risk risk-h">HIGH</span></td>
+                  <td style="color:var(--text2);font-size:12px">Mar 3</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-head-left">
+              <div class="panel-title">Positivity Rate</div>
+              <div class="panel-sub">All sessions · All time</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <svg class="donut-svg" width="128" height="128" viewBox="0 0 100 100">
+                <defs>
+                  <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#12e5b4"/>
+                    <stop offset="100%" stop-color="#3b82f6"/>
+                  </linearGradient>
+                </defs>
+                <circle class="donut-track" cx="50" cy="50" r="38"/>
+                <circle class="donut-fill" cx="50" cy="50" r="38"
+                  stroke="url(#dg)"
+                  stroke-dasharray="238.76"
+                  stroke-dashoffset="222.55"
+                  id="dring"/>
+              </svg>
+              <div class="donut-center">
+                <div class="donut-val" style="color:var(--teal)">6.8%</div>
+                <div class="donut-desc">Positive Rate</div>
+              </div>
+            </div>
+            <div class="legend">
+              <div class="leg-row">
+                <div class="leg-dot" style="background:var(--red)"></div>
+                High Risk (&gt;2%)
+                <span class="leg-val">23 cases</span>
+              </div>
+              <div class="leg-row">
+                <div class="leg-dot" style="background:var(--amber)"></div>
+                Moderate (0.5–2%)
+                <span class="leg-val">64 cases</span>
+              </div>
+              <div class="leg-row">
+                <div class="leg-dot" style="background:var(--teal)"></div>
+                Negative
+                <span class="leg-val">1,197 cases</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SESSION WIZARD ══ -->
+    <div class="page" id="p-session">
+      <div class="wizard-wrap">
+        <div class="steps" id="steps-bar">
+          <div class="step cur" id="ws1"><div class="step-n">1</div><div class="step-lbl">Smear Type</div></div>
+          <div class="step" id="ws2"><div class="step-n">2</div><div class="step-lbl">Patient Info</div></div>
+          <div class="step" id="ws3"><div class="step-n">3</div><div class="step-lbl">Slide Info</div></div>
+          <div class="step" id="ws4"><div class="step-n">4</div><div class="step-lbl">Settings</div></div>
+          <div class="step" id="ws5"><div class="step-n">5</div><div class="step-lbl">Begin</div></div>
+        </div>
+
+        <div class="wiz-card">
+
+          <!-- Step 1 -->
+          <div class="wiz-body" id="wb1">
+            <div class="wiz-title">Select Smear Type</div>
+            <div class="wiz-sub">Choose the type of blood smear preparation you will analyze in this session.</div>
+            <div class="smear-grid">
+              <div class="smear-card" id="sc-thin" onclick="pickSmear('thin')">
+                <span class="smear-icon">🔴</span>
+                <div class="smear-name">Thin Smear</div>
+                <div class="smear-desc">Single cell layer — better for species ID and RBC morphology assessment.</div>
+                <div class="smear-features">
+                  <div class="smear-feat">Identifies infected RBCs</div>
+                  <div class="smear-feat">Target: 1000 cells</div>
+                  <div class="smear-feat">Watershed segmentation</div>
+                  <div class="smear-feat">CNN patch classifier</div>
+                </div>
+              </div>
+              <div class="smear-card" id="sc-thick" onclick="pickSmear('thick')">
+                <span class="smear-icon">🔵</span>
+                <div class="smear-name">Thick Smear</div>
+                <div class="smear-desc">Higher sensitivity — detects low parasitemia and counts WBCs for quantification.</div>
+                <div class="smear-features">
+                  <div class="smear-feat">Identifies parasites</div>
+                  <div class="smear-feat">Target: 200 WBCs</div>
+                  <div class="smear-feat">WBC segmentation (C++)</div>
+                  <div class="smear-feat">Parasite counting</div>
+                </div>
+              </div>
+            </div>
+            <div class="tip-box">💡 <strong>Tip:</strong> Thin smears are preferred for species identification. Thick smears are preferred when detecting very low parasitemia levels. Use Giemsa staining for best results.</div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="wiz-body" id="wb2" style="display:none">
+            <div class="wiz-title">Patient Information</div>
+            <div class="wiz-sub">Only Patient ID is required. Other fields can be left empty. Search by ID to auto-fill from database.</div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label class="flbl">Patient ID <span class="req">*</span></label>
+                <input class="finput" type="text" placeholder="e.g. P-00472">
+              </div>
+              <div class="fgrp">
+                <label class="flbl">Age</label>
+                <input class="finput" type="number" placeholder="Years">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label class="flbl">Initials</label>
+                <input class="finput" type="text" placeholder="e.g. J.D.">
+              </div>
+              <div class="fgrp">
+                <label class="flbl">Gender</label>
+                <select class="fsel">
+                  <option value="">Select…</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl">HCT (Hematocrit %)</label>
+              <input class="finput" type="number" placeholder="e.g. 36">
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="wiz-body" id="wb3" style="display:none">
+            <div class="wiz-title">Slide Information</div>
+            <div class="wiz-sub">Record details about the blood slide being prepared and analyzed in this session.</div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label class="flbl">Slide ID <span class="req">*</span></label>
+                <input class="finput" type="text" placeholder="e.g. SL-2026-001">
+              </div>
+              <div class="fgrp">
+                <label class="flbl">Collection Site</label>
+                <input class="finput" type="text" placeholder="Hospital / clinic">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label class="flbl">Slide Preparer</label>
+                <input class="finput" type="text" placeholder="Name or ID">
+              </div>
+              <div class="fgrp">
+                <label class="flbl">Microscopist</label>
+                <input class="finput" type="text" placeholder="Name or ID">
+              </div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl">Staining Method</label>
+              <select class="fsel">
+                <option>Giemsa</option>
+                <option>Wright</option>
+                <option>Field</option>
+                <option>Leishman</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="wiz-body" id="wb4" style="display:none">
+            <div class="wiz-title">Session Settings</div>
+            <div class="wiz-sub">Configure detection sensitivity and image acquisition settings for this session.</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:var(--ink);border-radius:var(--r);padding:16px;border:1px solid var(--line)">
+                <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.09em;font-family:var(--mono);margin-bottom:12px">Detection Model</div>
+                <div class="ss-row" style="padding:0;border:none;margin-bottom:14px">
+                  <div class="ss-info">
+                    <div class="ss-name">SVM Threshold</div>
+                    <div class="ss-desc">Lower = less sensitive (fewer false +). Higher = more sensitive (fewer false −).</div>
+                  </div>
+                  <div class="sl-wrap">
+                    <input type="range" min="0" max="100" value="65" oninput="this.nextElementSibling.textContent=this.value">
+                    <span class="sl-val">65</span>
+                  </div>
+                </div>
+                <div class="ss-row" style="padding:0;border:none">
+                  <div class="ss-info">
+                    <div class="ss-name">Image Acquisition Only</div>
+                    <div class="ss-desc">Capture images without running the detection pipeline.</div>
+                  </div>
+                  <div class="tog" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+              <div style="background:var(--ink);border-radius:var(--r);padding:16px;border:1px solid var(--line)">
+                <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.09em;font-family:var(--mono);margin-bottom:12px">Camera</div>
+                <div class="ss-row" style="padding:0;border:none;margin-bottom:12px">
+                  <div class="ss-info">
+                    <div class="ss-name">Auto White Balance</div>
+                    <div class="ss-desc">Adjust WB automatically for true-to-life smear colors.</div>
+                  </div>
+                  <div class="tog on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="ss-row" style="padding:0;border:none">
+                  <div class="ss-info">
+                    <div class="ss-name">Cells Required</div>
+                    <div class="ss-desc">Number of cells before session auto-completes.</div>
+                  </div>
+                  <div class="sl-wrap">
+                    <input type="range" min="200" max="2000" step="100" value="1000" oninput="this.nextElementSibling.textContent=this.value">
+                    <span class="sl-val">1000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="wiz-body" id="wb5" style="display:none;text-align:center;padding-bottom:36px">
+            <div style="font-size:72px;margin-bottom:20px">🚀</div>
+            <div class="wiz-title">Ready to Begin</div>
+            <div class="wiz-sub" style="max-width:380px;margin-left:auto;margin-right:auto">Your session is fully configured. Open the camera view to start capturing and analyzing blood smear images.</div>
+            <div style="display:inline-flex;flex-direction:column;gap:10px;align-items:center;margin-top:8px">
+              <button class="btn btn-teal" style="padding:13px 36px;font-size:15px" onclick="go('camera')">📷 Open Camera View</button>
+              <div style="font-size:12px;color:var(--text2)">All settings saved for this session</div>
+            </div>
+          </div>
+
+          <div class="wiz-foot">
+            <button class="btn btn-ghost" id="wiz-back" onclick="wizBack()" style="display:none">← Back</button>
+            <div></div>
+            <button class="btn btn-teal" id="wiz-next" onclick="wizNext()">Continue →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CAMERA ══ -->
+    <div class="page" id="p-camera">
+      <div class="cam-layout">
+        <div class="cam-viewport">
+          <div class="cam-top">
+            <div class="cam-pill">Type: <span id="cam-type">THIN</span></div>
+            <div class="cam-pill">Images: <span id="cam-imgs">0</span></div>
+            <div class="cam-pill">Cells: <span id="cam-cells">0</span>/1000</div>
+          </div>
+          <div class="cam-ring"></div>
+          <div class="cam-crosshair"></div>
+          <div class="cam-corner tl"></div>
+          <div class="cam-corner tr"></div>
+          <div class="cam-corner bl"></div>
+          <div class="cam-corner br"></div>
+          <div class="cam-ghost-text">
+            📷 Live camera feed<br>
+            <span style="font-size:11px;opacity:0.6">Attach Android device via USB to capture real images</span>
+          </div>
+          <div class="cam-bottom">
+            <button class="cam-action" title="Settings" onclick="notify('White balance auto-adjusted','⚖')">⚖</button>
+            <button class="shutter" onclick="doCapture()" title="Capture">📷</button>
+            <button class="cam-action" title="Gallery" onclick="go('database')">🖼</button>
+          </div>
+        </div>
+
+        <div class="cam-panel">
+          <div class="cp-section">
+            <div class="cp-title">Current Session Counts</div>
+            <div class="count-pair">
+              <div class="count-box">
+                <div class="count-num c-total" id="cc-total">0</div>
+                <div class="count-sub">Total Cells</div>
+              </div>
+              <div class="count-box">
+                <div class="count-num c-inf" id="cc-inf">0</div>
+                <div class="count-sub">Infected</div>
+              </div>
+            </div>
+            <div class="pbar-wrap">
+              <div class="pbar-head">
+                <span>Progress to target</span>
+                <strong id="pbar-pct">0%</strong>
+              </div>
+              <div class="pbar">
+                <div class="pbar-fill" id="pbar-fill" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cp-section">
+            <div class="cp-title">Captured Images (most recent)</div>
+            <div class="thumb-grid" id="thumb-grid">
+              <div class="th">—</div><div class="th">—</div>
+              <div class="th">—</div><div class="th">—</div>
+              <div class="th">—</div><div class="th">—</div>
+              <div class="th">—</div><div class="th">—</div>
+            </div>
+          </div>
+
+          <div class="cp-section">
+            <div class="cp-title">Controls</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-ghost" style="width:100%;font-size:13px" onclick="notify('Enter manual count for this image','✏')">✏ Enter Manual Count</button>
+              <button class="btn btn-danger" style="width:100%;font-size:13px" onclick="endCamSession()">■ End Session</button>
+            </div>
+          </div>
+
+          <div class="cp-section">
+            <div class="cp-title">Quick Settings</div>
+            <div class="toggle-row"><span class="toggle-label">Auto White Balance</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><span class="toggle-label">Acquisition Mode Only</span><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+            <div class="toggle-row"><span class="toggle-label">Auto-advance on Accept</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DATABASE ══ -->
+    <div class="page" id="p-database">
+      <div class="db-topbar">
+        <div>
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:3px">Patient Database</h2>
+          <div style="font-size:12.5px;color:var(--text2)">342 patients · 1,284 screening sessions</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="search-box"><input type="text" placeholder="Search by ID or initials…"></div>
+          <button class="btn btn-ghost btn-sm" onclick="notify('Exporting database as CSV…','📤')">📤 Export CSV</button>
+          <button class="btn btn-danger btn-sm" onclick="notify('⚠ This would delete ALL patient data!','⚠')">🗑 Delete DB</button>
+        </div>
+      </div>
+
+      <div class="pt-grid">
+        <div class="pt-card" onclick="notify('Opening P-00471 slide history…','📋')">
+          <div class="pt-av" style="background:var(--red-dim);color:var(--red)">YT</div>
+          <div class="pt-pid">P-00471</div>
+          <div class="pt-name">Patient YT</div>
+          <div class="pt-chips">
+            <span class="chip">Female</span><span class="chip">Age 28</span><span class="chip">3 slides</span>
+          </div>
+          <div class="pt-foot">
+            <span style="color:var(--text2);font-size:12px">Parasitemia</span>
+            <span class="pt-para" style="color:var(--red)">4.20%</span>
+            <span class="risk risk-h">HIGH</span>
+          </div>
+        </div>
+        <div class="pt-card" onclick="notify('Opening P-00470 slide history…','📋')">
+          <div class="pt-av" style="background:var(--amber-dim);color:var(--amber)">WE</div>
+          <div class="pt-pid">P-00470</div>
+          <div class="pt-name">Patient WE</div>
+          <div class="pt-chips">
+            <span class="chip">Male</span><span class="chip">Age 35</span><span class="chip">1 slide</span>
+          </div>
+          <div class="pt-foot">
+            <span style="color:var(--text2);font-size:12px">Parasitemia</span>
+            <span class="pt-para" style="color:var(--amber)">1.20%</span>
+            <span class="risk risk-m">MOD</span>
+          </div>
+        </div>
+        <div class="pt-card" onclick="notify('Opening P-00469 slide history…','📋')">
+          <div class="pt-av" style="background:var(--teal-dim);color:var(--teal)">OP</div>
+          <div class="pt-pid">P-00469</div>
+          <div class="pt-name">Patient OP</div>
+          <div class="pt-chips">
+            <span class="chip">Female</span><span class="chip">Age 22</span><span class="chip">2 slides</span>
+          </div>
+          <div class="pt-foot">
+            <span style="color:var(--text2);font-size:12px">Parasitemia</span>
+            <span class="pt-para" style="color:var(--teal)">0.00%</span>
+            <span class="risk risk-l">CLEAR</span>
+          </div>
+        </div>
+        <div class="pt-card" onclick="notify('Opening P-00468 slide history…','📋')">
+          <div class="pt-av" style="background:var(--blue-dim);color:var(--blue)">MK</div>
+          <div class="pt-pid">P-00468</div>
+          <div class="pt-name">Patient MK</div>
+          <div class="pt-chips">
+            <span class="chip">Male</span><span class="chip">Age 45</span><span class="chip">1 slide</span>
+          </div>
+          <div class="pt-foot">
+            <span style="color:var(--text2);font-size:12px">Parasitemia</span>
+            <span class="pt-para" style="color:var(--teal)">0.00%</span>
+            <span class="risk risk-l">CLEAR</span>
+          </div>
+        </div>
+        <div class="pt-card" onclick="notify('Opening P-00467 slide history…','📋')">
+          <div class="pt-av" style="background:var(--red-dim);color:var(--red)">RJ</div>
+          <div class="pt-pid">P-00467</div>
+          <div class="pt-name">Patient RJ</div>
+          <div class="pt-chips">
+            <span class="chip">Male</span><span class="chip">Age 31</span><span class="chip">2 slides</span>
+          </div>
+          <div class="pt-foot">
+            <span style="color:var(--text2);font-size:12px">Parasitemia</span>
+            <span class="pt-para" style="color:var(--red)">1.80%</span>
+            <span class="risk risk-h">HIGH</span>
+          </div>
+        </div>
+        <div class="pt-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:180px" onclick="go('session')">
+          <div style="text-align:center;color:var(--text2)">
+            <div style="font-size:36px;margin-bottom:8px">＋</div>
+            <div style="font-size:13.5px;font-weight:600">New Session</div>
+            <div style="font-size:11.5px;margin-top:3px;color:var(--text3)">Start screening a new patient</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ UPLOAD ══ -->
+    <div class="page" id="p-upload">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Upload & Sync</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:24px">Upload session images and metadata to Box.com. Only operates over WiFi to avoid data charges.</p>
+
+      <div class="upload-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-head-left">
+              <div class="panel-title">☁ Quick Upload</div>
+              <div class="panel-sub">One-click sync of all pending sessions</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-family:var(--mono);font-size:12px;background:var(--ink);padding:14px;border-radius:10px;border:1px solid var(--line)">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Pending sessions</span><span style="color:var(--teal)">3</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Total images</span><span style="color:var(--teal)">47</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Estimated size</span><span style="color:var(--teal)">~128 MB</span></div>
+            </div>
+            <button class="btn btn-teal" style="width:100%" onclick="notify('Uploading… 0/47 files','☁')">☁ Quick Upload All</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-head-left">
+              <div class="panel-title">🔗 Box Account</div>
+              <div class="panel-sub">Cloud repository connection</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div style="background:var(--blue-dim);border:1px solid rgba(59,130,246,0.18);border-radius:10px;padding:14px;margin-bottom:16px">
+              <div style="color:var(--blue);font-weight:700;font-size:13px;margin-bottom:4px">Not Connected</div>
+              <div style="color:var(--text2);font-size:12px;line-height:1.6">Register at Box.com for a free account to enable cloud sync for images and CSV data.</div>
+            </div>
+            <button class="btn btn-ghost" style="width:100%" onclick="notify('Redirecting to Box OAuth…','🔐')">🔐 Connect Box Account</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <div class="panel-title">📁 Session Folders</div>
+            <div class="panel-sub">Select individual sessions to upload</div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="notify('Uploading selected sessions…','☁')">Upload Selected</button>
+        </div>
+        <div class="panel-body">
+          <div class="upload-folder-list">
+            ${[
+              ['1_1','May 14, 2026','12 images','PENDING'],
+              ['2_1','May 14, 2026','8 images','PENDING'],
+              ['1_4','May 12, 2026','15 images','PENDING'],
+              ['1_3','May 12, 2026','11 images','UPLOADED'],
+              ['3_1','May 7, 2026','9 images','UPLOADED'],
+              ['uhg_1','May 4, 2026','14 images','UPLOADED'],
+            ].map(([name,date,count,status])=>`
+            <div class="uf-row">
+              <input type="checkbox" style="accent-color:var(--teal)">
+              <span class="uf-name">${name}</span>
+              <span class="uf-date">${date}</span>
+              <span class="uf-count">${count}</span>
+              <span style="margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:700;color:${status==='PENDING'?'var(--amber)':'var(--teal)'}">${status}</span>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GUIDELINES ══ -->
+    <div class="page" id="p-guidelines">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Imaging Guidelines</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:24px">Follow these guidelines to achieve optimal automated screening results.</p>
+
+      <div class="guide-grid">
+        <div class="guide-card"><div class="gc-icon">🎯</div><div class="gc-title">Center Position</div><div class="gc-desc">The circular microscope field-of-view must be fully within the frame and centered. Misaligned or cut-off fields will reduce detection accuracy.</div></div>
+        <div class="guide-card"><div class="gc-icon">💡</div><div class="gc-title">Even Illumination</div><div class="gc-desc">Avoid shadows and vignetting especially along the image border. Ensure consistent, uniform illumination across the entire field.</div></div>
+        <div class="guide-card"><div class="gc-icon">🔍</div><div class="gc-title">Clean Lens</div><div class="gc-desc">Clean both the eyepiece and phone camera lens before each session. Smudges or marks on the lens will be mistaken for cellular structures.</div></div>
+        <div class="guide-card"><div class="gc-icon">🦠</div><div class="gc-title">Cell Distribution</div><div class="gc-desc">Aim for well-separated single cells when possible. Dense cell clusters prevent accurate segmentation; sparse fields reduce counting efficiency.</div></div>
+        <div class="guide-card"><div class="gc-icon">📐</div><div class="gc-title">Sharp Focus</div><div class="gc-desc">Each captured image must be in sharp focus with no motion blur. Wait for lens stabilization before each capture in the camera view.</div></div>
+        <div class="guide-card"><div class="gc-icon">📱</div><div class="gc-title">Recommended Hardware</div><div class="gc-desc">Samsung Galaxy S Series (12+ MP, single-lens). Microscope adapter from telescopeadapters.com/128-universal-mounts. 100× objective lens.</div></div>
+      </div>
+
+      <div style="background:var(--ink2);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line);font-size:14px;font-weight:700">✅ Good vs ❌ Bad — Quick Reference</div>
+        <div class="compare-grid">
+          <div class="cg-head" style="background:rgba(18,229,180,0.04)">✅ Correct Imaging</div>
+          <div class="cg-head" style="background:rgba(244,63,94,0.04)">❌ Avoid This</div>
+          <div class="cg-item">
+            <div class="cg-ic ic-ok">✅</div>
+            <div class="cg-text"><div class="cg-bold">Centered, full field</div><div class="cg-detail">Circular FOV fully visible and centered in the frame.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-no">❌</div>
+            <div class="cg-text"><div class="cg-bold">Off-center or cut-off</div><div class="cg-detail">FOV too small, misaligned, or extends beyond image edges.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-ok">✅</div>
+            <div class="cg-text"><div class="cg-bold">Uniform illumination</div><div class="cg-detail">Consistent brightness across the entire field with no border shadows.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-no">❌</div>
+            <div class="cg-text"><div class="cg-bold">Shadow/vignetting</div><div class="cg-detail">Dark edges from misalignment, dirty lens or poor lighting conditions.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-ok">✅</div>
+            <div class="cg-text"><div class="cg-bold">Well-separated cells</div><div class="cg-detail">Individual cells are distinguishable, not clumped together.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-no">❌</div>
+            <div class="cg-text"><div class="cg-bold">Too dense or too sparse</div><div class="cg-detail">Overlapping cell clusters or very few cells per field impair accuracy.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-ok">✅</div>
+            <div class="cg-text"><div class="cg-bold">Sharp, in-focus image</div><div class="cg-detail">Crisp cell boundaries with no motion blur or out-of-focus blur.</div></div>
+          </div>
+          <div class="cg-item">
+            <div class="cg-ic ic-no">❌</div>
+            <div class="cg-text"><div class="cg-bold">Blurry or smeared</div><div class="cg-detail">Motion during capture or incorrect focus position causes blur artifacts.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="p-settings">
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <div class="sn-item on">📷 Camera</div>
+          <div class="sn-item" onclick="settingsNav(this)">🤖 Detection Model</div>
+          <div class="sn-item" onclick="settingsNav(this)">📊 Session</div>
+          <div class="sn-item" onclick="settingsNav(this)">☁ Upload</div>
+          <div class="sn-item" onclick="settingsNav(this)">🗃 Database</div>
+        </div>
+        <div class="settings-sections">
+          <div class="ss">
+            <div class="ss-head">📷 Camera Settings</div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Auto White Balance</div><div class="ss-desc">Camera will automatically adjust white balance to produce true-to-life smear colors.</div></div>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Image Acquisition Mode</div><div class="ss-desc">Capture and save images without running detection. App immediately advances on image acceptance.</div></div>
+              <div class="tog" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Auto-focus Lock</div><div class="ss-desc">Lock focus after initial autofocus to prevent refocusing between captures.</div></div>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="ss">
+            <div class="ss-head">🤖 Detection Model</div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">SVM Classifier Threshold</div><div class="ss-desc">Smaller value = less sensitive (fewer false positives). Larger value = more sensitive (fewer false negatives). Default: 65.</div></div>
+              <div class="sl-wrap">
+                <input type="range" min="0" max="100" value="65" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="sl-val">65</span>
+              </div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Thin Smear Model</div><div class="ss-desc">Active TensorFlow CNN model for thin smear patch classification.</div></div>
+              <div style="font-family:var(--mono);font-size:11.5px;color:var(--teal)">thin_model_v2.pb</div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Thick Smear Model</div><div class="ss-desc">Active TensorFlow CNN model for thick smear patch classification.</div></div>
+              <div style="font-family:var(--mono);font-size:11.5px;color:var(--blue)">thick_model_v1.pb</div>
+            </div>
+          </div>
+
+          <div class="ss">
+            <div class="ss-head">📊 Session Settings</div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Total Cells (Thin Smear)</div><div class="ss-desc">Number of RBCs to count before session auto-completes. Default: 1000.</div></div>
+              <div class="sl-wrap">
+                <input type="range" min="200" max="2000" step="100" value="1000" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="sl-val">1000</span>
+              </div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Total WBCs (Thick Smear)</div><div class="ss-desc">Number of WBCs to count per patient for thick smear sessions. Default: 200.</div></div>
+              <div class="sl-wrap">
+                <input type="range" min="50" max="500" step="50" value="200" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="sl-val">200</span>
+              </div>
+            </div>
+            <div class="ss-row">
+              <div class="ss-info"><div class="ss-name">Auto-advance After Accept</div><div class="ss-desc">Automatically proceed to next capture after the user accepts a result image.</div></div>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- NOTIFICATION TRAY -->
+<div class="notif-tray" id="notif-tray"></div>
+
+<script>
+// ─── State ───
+let wizStep = 1;
+let smearChoice = null;
+let camImgs = 0, camCells = 0, camInf = 0;
+let notifId = 0;
+
+// ─── Navigation ───
+const titles = {
+  dashboard:['Dashboard','Overview'],
+  session:['New Session','Session Wizard'],
+  camera:['Camera View','Live Capture'],
+  database:['Patient Database','All Records'],
+  upload:['Upload & Sync','Box Cloud'],
+  guidelines:['Imaging Guidelines','Best Practices'],
+  settings:['Settings','Configuration']
+};
+
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('p-' + id).classList.add('on');
+  const t = titles[id] || [id,''];
+  document.getElementById('pg-title').textContent = t[0];
+  document.getElementById('pg-crumb').textContent = t[1];
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('on');
+  });
+}
+
+// ─── Wizard ───
+function wizNext() {
+  if (wizStep === 1 && !smearChoice) { notify('Please select a smear type first', '⚠'); return; }
+  if (wizStep < 5) {
+    document.getElementById('wb' + wizStep).style.display = 'none';
+    const s = document.getElementById('ws' + wizStep);
+    s.classList.remove('cur'); s.classList.add('done');
+    wizStep++;
+    document.getElementById('wb' + wizStep).style.display = 'block';
+    document.getElementById('ws' + wizStep).classList.add('cur');
+    document.getElementById('wiz-back').style.display = wizStep > 1 ? '' : 'none';
+    if (wizStep === 5) document.getElementById('wiz-next').style.display = 'none';
+  }
+}
+
+function wizBack() {
+  if (wizStep > 1) {
+    document.getElementById('wb' + wizStep).style.display = 'none';
+    document.getElementById('ws' + wizStep).classList.remove('cur');
+    wizStep--;
+    document.getElementById('wb' + wizStep).style.display = 'block';
+    const s = document.getElementById('ws' + wizStep);
+    s.classList.remove('done'); s.classList.add('cur');
+    document.getElementById('wiz-back').style.display = wizStep > 1 ? '' : 'none';
+    document.getElementById('wiz-next').style.display = '';
+  }
+}
+
+function pickSmear(t) {
+  smearChoice = t;
+  document.getElementById('sc-thin').className = 'smear-card' + (t === 'thin' ? ' sel-thin' : '');
+  document.getElementById('sc-thick').className = 'smear-card' + (t === 'thick' ? ' sel-thick' : '');
+  document.getElementById('cam-type').textContent = t.toUpperCase();
+}
+
+// ─── Camera ───
+function doCapture() {
+  camImgs++;
+  const newCells = Math.floor(Math.random() * 140) + 80;
+  const newInf = Math.random() < 0.28 ? Math.floor(Math.random() * 8) + 1 : 0;
+  camCells = Math.min(camCells + newCells, 1000);
+  camInf += newInf;
+
+  document.getElementById('cam-imgs').textContent = camImgs;
+  document.getElementById('cam-cells').textContent = camCells;
+  document.getElementById('cc-total').textContent = camCells;
+  document.getElementById('cc-inf').textContent = camInf;
+
+  const pct = Math.round((camCells / 1000) * 100);
+  document.getElementById('pbar-fill').style.width = pct + '%';
+  document.getElementById('pbar-pct').textContent = pct + '%';
+
+  // Update thumbs
+  const thumbs = document.querySelectorAll('#thumb-grid .th');
+  const idx = (camImgs - 1) % thumbs.length;
+  thumbs[idx].className = 'th ok';
+  thumbs[idx].textContent = '✓';
+
+  const msg = newInf > 0
+    ? `Image ${camImgs} · ${newCells} cells · ⚠ ${newInf} infected`
+    : `Image ${camImgs} captured · ${newCells} cells · Clear`;
+  notify(msg, newInf > 0 ? '🔴' : '✅');
+}
+
+function endCamSession() {
+  notify(`Session ended · ${camCells} cells · ${camInf} infected`, '📊');
+  camImgs = camCells = camInf = 0;
+  document.getElementById('cam-imgs').textContent = 0;
+  document.getElementById('cam-cells').textContent = 0;
+  document.getElementById('cc-total').textContent = 0;
+  document.getElementById('cc-inf').textContent = 0;
+  document.getElementById('pbar-fill').style.width = '0%';
+  document.getElementById('pbar-pct').textContent = '0%';
+  document.querySelectorAll('#thumb-grid .th').forEach(t => { t.className = 'th'; t.textContent = '—'; });
+  go('database');
+}
+
+// ─── Settings nav ───
+function settingsNav(el) {
+  document.querySelectorAll('.sn-item').forEach(i => i.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ─── Notifications ───
+function notify(msg, icon = '✅') {
+  const tray = document.getElementById('notif-tray');
+  const id = 'n' + (notifId++);
+  const el = document.createElement('div');
+  el.className = 'notif-card';
+  el.id = id;
+  el.innerHTML = `<span class="nc-icon">${icon}</span><span class="nc-text">${msg}</span><span class="nc-close" onclick="closeNotif('${id}')">✕</span>`;
+  tray.appendChild(el);
+  setTimeout(() => closeNotif(id), 4500);
+}
+
+function closeNotif(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('exit');
+  setTimeout(() => el.remove(), 280);
+}
+
+// ─── Init ───
+setTimeout(() => {
+  const ring = document.getElementById('dring');
+  if (ring) ring.style.strokeDashoffset = 238.76 * (1 - 0.068);
+}, 700);
+
+go('dashboard');
+</script>
+</body>
+</html>
